@@ -1,6 +1,7 @@
 import Interfaces.IDrawable;
 
 public class Tile {
+    public Tile(boolean canBeMovedThrough) {this.canBeMovedThrough = canBeMovedThrough;}
     public void Activate() {
         ++ActivatedCount;
     }

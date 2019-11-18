@@ -3,6 +3,7 @@ import Rendering.Renderer;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +18,18 @@ public class Map implements IDrawable{
     public Map(int height, int width){
         this.height = height;
         this.width = width;
-        tiles = Stream.generate(Tile::new).limit(getCellColumns()*getCellRows()).collect(Collectors.toList());
+        tiles = new ArrayList<>();
+        for (int i = 0; i < getCellColumns()*getCellRows(); i++) {
+            if (i == 0) {
+                tiles.add(new Tile(true));
+            }
+            if (random.nextInt()%10 == 0)
+            {
+                tiles.add(new Tile(false));
+            } else {
+                tiles.add(new Tile(true));
+            }
+        }
         player = new Player();
     }
 
@@ -27,7 +39,9 @@ public class Map implements IDrawable{
             Renderer.DrawQuad(
                     getRenderCoordsFromIndex(i),
                     tileWidthHolder,
-                    colors.get(tiles.get(i).getActivations()%colors.size())
+                    tiles.get(i).canBeMovedThrough() ?
+                            colors.get(tiles.get(i).getActivations()%colors.size()):
+                            new Triplet<>(0f,0f,0f)
                     );
         }
         player.DrawMe();
@@ -66,31 +80,31 @@ public class Map implements IDrawable{
     }
 
     public void UpdatePlayer(int key) {
-        ArrayList<Tile> applicableTiles;
+        ArrayList<Tile> applicableTiles = new ArrayList<>();
         switch (key)
         {
             case GLFW_KEY_LEFT:
                 applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.LEFT);
-                player.xPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue0();
-                applicableTiles.forEach(tile -> tile.Activate());
+                if (applicableTiles.size() < 1) break;
+                player.xPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.get(applicableTiles.size()-1))).getValue0();
                 break;
             case GLFW_KEY_UP:
                 applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.UP);
-                player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue1();
-                applicableTiles.forEach(tile -> tile.Activate());
+                if (applicableTiles.size() < 1) break;
+                player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.get(applicableTiles.size()-1))).getValue1();
                 break;
             case GLFW_KEY_RIGHT:
                 applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.RIGHT);
-                System.out.println(applicableTiles);
-                player.xPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue0();
-                applicableTiles.forEach(tile -> tile.Activate());
+                if (applicableTiles.size() < 1) break;
+                player.xPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.get(applicableTiles.size()-1))).getValue0();
                 break;
             case GLFW_KEY_DOWN:
                 applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.DOWN);
-                player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue1();
-                applicableTiles.forEach(tile -> tile.Activate());
+                if (applicableTiles.size() < 1) break;
+                player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.get(applicableTiles.size()-1))).getValue1();
                 break;
         }
+        applicableTiles.forEach(tile -> tile.Activate());
     }
 
     //get cells in column
@@ -120,22 +134,22 @@ public class Map implements IDrawable{
         switch (dir) {
             case UP:
                 holder = GetTilesInColumn(x);
-                Collections.reverse(holder);
-                index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
-                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+                holder = holder.subList(y,holder.size());
+                return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             case DOWN:
                 holder = GetTilesInColumn(x);
-                index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
-                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+                Collections.reverse(holder);
+                holder = holder.subList(-(y-getCellRows()), holder.size());
+                return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             case LEFT:
                 holder = GetTilesInRow(y);
-                index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
-                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+                Collections.reverse(holder);
+                holder = holder.subList(-(x-getCellColumns()),holder.size());
+                return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             case RIGHT:
                 holder = GetTilesInRow(y);
-                Collections.reverse(holder);
-                index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
-                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+                holder = holder.subList(x,holder.size());
+                return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             default:
                 return null;
         }

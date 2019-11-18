@@ -16,4 +16,8 @@ public class Player implements IDrawable {
                 new Triplet<>(1f,1f,1f)
         );
     }
+
+    public String DebugInfo() {
+        return Integer.toString(xPos) + "," + Integer.toString(yPos);
+    }
 }
