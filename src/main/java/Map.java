@@ -66,21 +66,29 @@ public class Map implements IDrawable{
     }
 
     public void UpdatePlayer(int key) {
+        ArrayList<Tile> applicableTiles;
         switch (key)
         {
             case GLFW_KEY_LEFT:
-                ArrayList<Tile> applicableTiles = GetTilesInRow(player.yPos);
+                applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.LEFT);
+                player.xPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue0();
+                applicableTiles.forEach(tile -> tile.Activate());
                 break;
             case GLFW_KEY_UP:
-                GetRemainingCells(player.xPos,player.yPos,direction.UP).forEach(tile -> tile.Activate());
-
+                applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.UP);
+                player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue1();
+                applicableTiles.forEach(tile -> tile.Activate());
                 break;
             case GLFW_KEY_RIGHT:
-                GetTilesInColumn(0).stream().forEach(tile -> tile.Activate());
+                applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.RIGHT);
+                System.out.println(applicableTiles);
+                player.xPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue0();
+                applicableTiles.forEach(tile -> tile.Activate());
                 break;
             case GLFW_KEY_DOWN:
-                GetTilesInColumn(2).stream().forEach(tile -> tile.Activate());
-
+                applicableTiles = GetRemainingCells(player.xPos,player.yPos,direction.DOWN);
+                player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.stream().findFirst().get())).getValue1();
+                applicableTiles.forEach(tile -> tile.Activate());
                 break;
         }
     }
@@ -114,13 +122,23 @@ public class Map implements IDrawable{
                 holder = GetTilesInColumn(x);
                 Collections.reverse(holder);
                 index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
-                return (ArrayList<Tile>) holder.stream().limit(index).collect(Collectors.toList());
+                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             case DOWN:
                 holder = GetTilesInColumn(x);
                 index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
-
+                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+            case LEFT:
+                holder = GetTilesInRow(y);
+                index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
+                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+            case RIGHT:
+                holder = GetTilesInRow(y);
+                Collections.reverse(holder);
+                index=holder.indexOf(tiles.get(CoordsToIndex(x,y)));
+                return (ArrayList<Tile>) holder.stream().limit(index).takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
+            default:
+                return null;
         }
-        return null;
     }
 
     private enum direction{
