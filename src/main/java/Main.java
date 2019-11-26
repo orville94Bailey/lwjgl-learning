@@ -45,8 +45,8 @@ public class Main {
         colors.add(new Triplet<Float, Float, Float>(1f,0f,0f));
         colors.add(new Triplet<Float, Float, Float>(0f,1f,0f));
         colors.add(new Triplet<Float, Float, Float>(0f,0f,1f));
-        height = 300;
-        width = 300;
+        height = 500;
+        width = 500;
         myMap = new Map(height,width);
         Renderer.RegisterDrawable(myMap);
 
@@ -73,6 +73,12 @@ public class Main {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ) {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             } else if ((key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT || key == GLFW_KEY_UP || key == GLFW_KEY_DOWN) && action == GLFW_RELEASE) {
+                myMap.UpdatePlayer(key);
+            } else if (key == GLFW_KEY_R) {
+                Renderer.UnregisterDrawable(myMap);
+                myMap = new Map(height,width);
+                Renderer.RegisterDrawable(myMap);
+            } else if (key == GLFW_KEY_LEFT_ALT) {
                 myMap.UpdatePlayer(key);
             }
         });

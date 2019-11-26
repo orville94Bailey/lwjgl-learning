@@ -10,6 +10,10 @@
         <maven.compiler.release>11</maven.compiler.release>
         <lwjgl.version>3.2.3</lwjgl.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
+        <sonar.projectKey>orville94Bailey_lwjgl-learning</sonar.projectKey>
+        <sonar.organization>orville94bailey</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.login>not today</sonar.login>
     </properties>
 
     <dependencyManagement>
@@ -23,8 +27,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.5.1</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>

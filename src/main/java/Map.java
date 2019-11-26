@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -19,7 +20,7 @@ public class Map implements IDrawable{
         this.height = height;
         this.width = width;
         tiles = new ArrayList<>();
-        for (int i = 0; i < getCellColumns()*getCellRows(); i++) {
+        for (int i = 0; i < (getCellColumns()*getCellRows())-1; i++) {
             if (i == 0) {
                 tiles.add(new Tile(true));
             }
@@ -103,6 +104,9 @@ public class Map implements IDrawable{
                 if (applicableTiles.size() < 1) break;
                 player.yPos = getCoordsFromIndex(tiles.indexOf(applicableTiles.get(applicableTiles.size()-1))).getValue1();
                 break;
+            case GLFW_KEY_LEFT_ALT:
+                random.ints(262,266).limit(30).forEach( i -> UpdatePlayer(i));
+                break;
         }
         applicableTiles.forEach(tile -> tile.Activate());
     }
@@ -117,14 +121,10 @@ public class Map implements IDrawable{
         return holder;
     }
     //get cells in row
-    private ArrayList<Tile> GetTilesInRow(int row) {
-        ArrayList<Tile> holder = new ArrayList<>();
-
-        for (int i = row * getCellColumns(); i < ((row*getCellColumns())+getCellColumns()); i++) {
-            holder.add(tiles.get(i));
-        }
-        return holder;
+    protected List<Tile> GetTilesInRow(int row) {
+        return new ArrayList<>( tiles.subList(row*getCellColumns(),(row*getCellColumns())+getCellColumns()));
     }
+
     private int CoordsToIndex(int x, int y) {
         return (y*getCellColumns())+x;
     }
@@ -134,7 +134,7 @@ public class Map implements IDrawable{
         switch (dir) {
             case UP:
                 holder = GetTilesInColumn(x);
-                holder = holder.subList(y,holder.size());
+                holder = holder.subList(y+1,holder.size());
                 return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             case DOWN:
                 holder = GetTilesInColumn(x);
@@ -148,11 +148,10 @@ public class Map implements IDrawable{
                 return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
             case RIGHT:
                 holder = GetTilesInRow(y);
-                holder = holder.subList(x,holder.size());
+                holder = holder.subList(x+1,holder.size());
                 return (ArrayList<Tile>) holder.stream().takeWhile(tile -> tile.canBeMovedThrough()).collect(Collectors.toList());
-            default:
-                return null;
         }
+        return new ArrayList<>();
     }
 
     private enum direction{
